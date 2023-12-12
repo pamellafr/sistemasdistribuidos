@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <div class="container">
+        <form id="loginForm">
+            <h1>Login</h1>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" required>
+
+            <input type="submit" value="Login">
+        </form>
+        <!-- Botão de cadastrar -->
+        <a href="http://localhost:3000/" id="cadastrarButton">Não possui uma conta? Cadastrar</a>
+    </div>
+
+    
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, senha })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Login realizado com sucesso!');
+                    // Redirecionar para uma página de dashboard ou página após o login
+                    window.location.href = 'http://localhost:3002/';
+                } else {
+                    alert('Credenciais inválidas. Por favor, tente novamente.');
+                }
+            })
+            .catch(error => {
+                alert('Ocorreu um erro ao fazer login.');
+                console.error(error);
+            });
+        });
+        
+    </script>
+</body>
+</html>
