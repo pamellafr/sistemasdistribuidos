@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque de Produtos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #333;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Estoque de Produtos</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome do Produto</th>
+                <th>Tipo</th>
+                <th>Quantidade</th>
+            </tr>
+        </thead>
+        <tbody id="estoqueBody"></tbody>
+    </table>
+
+    <script>
+        // Função para buscar dados do estoque e atualizar a tabela
+        async function atualizarEstoque() {
+            try {
+                const response = await fetch('/estoque');
+                const dadosEstoque = await response.json();
+
+                const estoqueBody = document.getElementById('estoqueBody');
+                estoqueBody.innerHTML = '';
+
+                dadosEstoque.forEach(produto => {
+                    const tr = document.createElement('tr');
+
+                    const tdNomeProduto = document.createElement('td');
+                    tdNomeProduto.textContent = produto.nomeproduto;
+
+                    const tdTipo = document.createElement('td');
+                    tdTipo.textContent = produto.tipo;
+
+                    const tdQuantidade = document.createElement('td');
+                    tdQuantidade.textContent = produto.quantidade;
+
+                    tr.appendChild(tdNomeProduto);
+                    tr.appendChild(tdTipo);
+                    tr.appendChild(tdQuantidade);
+
+                    estoqueBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Erro ao buscar dados do estoque:', error);
+            }
+        }
+
+        // Atualiza o estoque ao carregar a página
+        atualizarEstoque();
+
+        // Atualiza o estoque a cada 10 segundos (10000 milissegundos)
+        setInterval(atualizarEstoque, 10000);
+    </script>
+</body>
+</html>

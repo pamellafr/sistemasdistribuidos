@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cadastro de Produtos</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Cadastrar Produtos</h1>
+        <form id="cadastroForm">
+            <label for="nomeproduto">Nome Produto:</label>
+            <input type="text" id="nomeproduto" name="nomeproduto" required>
+
+            <label for="tipo">Tipo de produto:</label>
+            <input type="text" id="tipo" name="tipo" required>
+
+            <label for="valor">Valor:</label>
+            <input type="text" id="valor" name="valor" required>
+
+            <input type="submit" value="Cadastrar">
+        </form>
+         <a href="http://localhost:3003/" id="cadastrarButton">Acessar estoque</a>
+    </div>
+
+    <script>
+        document.getElementById('cadastroForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const nomeproduto = document.getElementById('nomeproduto').value;
+            const tipo = document.getElementById('tipo').value;
+            const valor = document.getElementById('valor').value;
+
+            fetch('/produto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nomeproduto, tipo, valor })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Produto Cadastrado com sucesso!');
+                console.log(data);
+            })
+            .catch(error => {
+                alert('Ocorreu um erro ao cadastrar produto');
+                console.error(error);
+            });
+        });
+    </script>
+</body>
+</html>

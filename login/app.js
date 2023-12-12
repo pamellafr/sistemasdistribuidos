@@ -87,6 +87,56 @@ async function consumirCadastro() {
         res.json({ success: true });
     });
 });
+// Após a verificação bem-sucedida do login
+async function enviarLogin(email) {
+    try {
+        const connection = await amqp.connect({
+            host: 'localhost',
+            port: 5673,
+            username: 'guest',
+            password: 'guest'
+        });
+        const channel = await connection.createChannel();
+        const queueName = 'login';
+        const mensagem = { email };
+
+        await channel.assertQueue(queueName);
+        await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(mensagem)));
+
+        console.log("Login enviado para a fila 'login'");
+
+        await channel.close();
+        await connection.close();
+    } catch (error) {
+        console.error('Erro ao enviar login:', error);
+    }
+}
+
+app.post('/login', (req, res) => {
+    const { email, senha } = req.body;
+
+    console.log(`Tentativa de login para o Email: ${email}, Senha: ${senha}`);
+
+    // Verifica se as credenciais estão corretas
+    db.get(`SELECT * FROM usuarios WHERE email = ? AND senha = ?`, [email, senha], (err, row) => {
+        console.log('Resultado da consulta para verificar login:', row);
+
+        if (err) {
+            return res.status(500).json({ message: 'Erro ao verificar login no banco de dados' });
+        }
+        if (!row) {
+            console.log(`Credenciais inválidas para o Email: ${email}`);
+            return res.status(400).json({ message: 'Credenciais inválidas. Verifique seu email e senha.' });
+        }
+
+        // Se as credenciais estiverem corretas, envia mensagem para a fila de login
+        enviarLogin(email);
+
+        // Retorna sucesso
+        console.log('Login bem-sucedido!');
+        res.json({ success: true });
+    });
+});
 
 app.post('/cadastro', (req, res) => {
     const { nome, email, senha } = req.body;
