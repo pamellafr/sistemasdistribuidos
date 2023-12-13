@@ -4,39 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estoque de Produtos</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-
-        h1 {
-            color: #333;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table, th, td {
-            border: 1px solid #333;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="estoque.css">
 </head>
 <body>
-    <h1>Estoque de Produtos</h1>
-    <table>
+    <h1 class="estoque-title">Estoque de Produtos</h1>
+    <table class="estoque-table">
         <thead>
             <tr>
                 <th>Nome do Produto</th>
@@ -46,7 +18,10 @@
         </thead>
         <tbody id="estoqueBody"></tbody>
     </table>
-
+    <div id="botoes-container">
+        <a href="http://localhost:3002/" class="botao-voltar">Voltar</a>
+        <a href="http://localhost:3001/" class="botao-sair">Sair</a>
+    </div>
     <script>
         // Função para buscar dados do estoque e atualizar a tabela
         async function atualizarEstoque() {

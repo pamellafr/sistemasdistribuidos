@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose(); // Importa o SQLite
+const amqp = require('amqplib');
+
 
 const app = express();
 app.use(bodyParser.json());
@@ -21,51 +23,49 @@ const db = new sqlite3.Database('usuarios.db', (err) => {
     }
 });
 
-
-//Consumidor
-const amqp = require('amqplib');
-
+// Consumidor
 async function consumirCadastro() {
     try {
-      const connection = await amqp.connect({
-          host: 'localhost', // Nome do serviço RabbitMQ definido no docker-compose.yml
-          port: 5673,        // Porta padrão do RabbitMQ
-          username: 'guest',
-          password: 'guest'
-      });
-      const channel = await connection.createChannel();
-      const queueName = 'cadastro';
-  
-      // Declare a fila
-      await channel.assertQueue(queueName);
-  
-      // Consume mensagens da fila
-      await channel.consume(queueName, (msg) => {
-        if (msg !== null) {
-          const dadosCadastro = JSON.parse(msg.content.toString());
-          console.log('Recebido dados de cadastro:', dadosCadastro);
-          // Insira os dados no banco de dados
-        db.run(`INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)`,
-        [dadosCadastro.nome, dadosCadastro.email, dadosCadastro.senha],
-        function (err) {
-            if (err) {
-                console.error('Erro ao inserir dados de cadastro no banco de dados:', err);
-            } else {
-                console.log('Dados de cadastro inseridos no banco de dados com sucesso.');
+        const connection = await amqp.connect({
+            host: 'localhost', // Nome do serviço RabbitMQ definido no docker-compose.yml
+            port: 5673,        // Porta padrão do RabbitMQ
+            username: 'guest',
+            password: 'guest'
+        });
+        const channel = await connection.createChannel();
+        const queueName = 'cadastro';
+
+        // Declare a fila
+        await channel.assertQueue(queueName);
+
+        // Consume mensagens da fila
+        await channel.consume(queueName, (msg) => {
+            if (msg !== null) {
+                const dadosCadastro = JSON.parse(msg.content.toString());
+                console.log('Recebido dados de cadastro:', dadosCadastro);
+                // Insira os dados no banco de dados
+                db.run(`INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)`,
+                    [dadosCadastro.nome, dadosCadastro.email, dadosCadastro.senha],
+                    function (err) {
+                        if (err) {
+                            console.error('Erro ao inserir dados de cadastro no banco de dados:', err);
+                        } else {
+                            console.log('Dados de cadastro inseridos no banco de dados com sucesso.');
+                        }
+                    });
+
+                channel.ack(msg); // Confirma que a mensagem foi processada com sucesso
+                console.log('Consumidor iniciado. Aguardando mensagens da fila...');
             }
         });
-          
-          channel.ack(msg); // Confirma que a mensagem foi processada com sucesso
-          console.log('Consumidor iniciado. Aguardando mensagens da fila...');
-        }
-      });
     } catch (error) {
-      console.error('Erro ao consumir cadastro:', error);
+        console.error('Erro ao consumir cadastro:', error);
     }
-  }
-  consumirCadastro();
+}
 
-  app.post('/login', (req, res) => {
+consumirCadastro();
+
+app.post('/login', (req, res) => {
     const { email, senha } = req.body;
 
     console.log(`Tentativa de login para o Email: ${email}, Senha: ${senha}`);
@@ -85,9 +85,12 @@ async function consumirCadastro() {
         // Se as credenciais estiverem corretas, retorna sucesso
         console.log('Login bem-sucedido!');
         res.json({ success: true });
+
+        // Após a verificação bem-sucedida do login, envia o nome para a fila
+        enviarLogin(row.email); // Enviar o email em vez do nome
     });
 });
-// Após a verificação bem-sucedida do login
+
 async function enviarLogin(email) {
     try {
         const connection = await amqp.connect({
@@ -98,7 +101,7 @@ async function enviarLogin(email) {
         });
         const channel = await connection.createChannel();
         const queueName = 'login';
-        const mensagem = { email };
+        const mensagem = { email }; // Enviar o email em vez do nome
 
         await channel.assertQueue(queueName);
         await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(mensagem)));
@@ -112,35 +115,9 @@ async function enviarLogin(email) {
     }
 }
 
-app.post('/login', (req, res) => {
-    const { email, senha } = req.body;
-
-    console.log(`Tentativa de login para o Email: ${email}, Senha: ${senha}`);
-
-    // Verifica se as credenciais estão corretas
-    db.get(`SELECT * FROM usuarios WHERE email = ? AND senha = ?`, [email, senha], (err, row) => {
-        console.log('Resultado da consulta para verificar login:', row);
-
-        if (err) {
-            return res.status(500).json({ message: 'Erro ao verificar login no banco de dados' });
-        }
-        if (!row) {
-            console.log(`Credenciais inválidas para o Email: ${email}`);
-            return res.status(400).json({ message: 'Credenciais inválidas. Verifique seu email e senha.' });
-        }
-
-        // Se as credenciais estiverem corretas, envia mensagem para a fila de login
-        enviarLogin(email);
-
-        // Retorna sucesso
-        console.log('Login bem-sucedido!');
-        res.json({ success: true });
-    });
-});
-
 app.post('/cadastro', (req, res) => {
     const { nome, email, senha } = req.body;
-    // console.log(`Nome: ${nome}, Email: ${email}, Senha: ${senha}`);
+
     // Verifica se o email já está cadastrado
     db.get(`SELECT * FROM usuarios WHERE email = ?`, [email], (err, row) => {
         if (err) {
@@ -148,23 +125,19 @@ app.post('/cadastro', (req, res) => {
         }
         if (row) {
             console.log(`O Email: ${email}, já existe`);
-            // res.json({ message: 'Email já cadastrado. Por favor, use outro email.!' });
             return res.status(400).json({ message: 'Email já cadastrado. Por favor, use outro email.' });
-            
         }
 
         // Insere os dados do usuário na tabela 'usuarios'
-        db.run(`INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)`, [nome, email, senha], function(err) {
+        db.run(`INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)`, [nome, email, senha], function (err) {
             if (err) {
                 return res.status(500).json({ message: 'Erro ao cadastrar usuário no banco de dados' });
             }
             res.json({ message: 'Usuário cadastrado com sucesso!' });
-	          console.log(`Nome: ${nome}, Email: ${email}, Senha: ${senha}`);
+            console.log(`Nome: ${nome}, Email: ${email}, Senha: ${senha}`);
         });
     });
 });
-
-consumirCadastro();
 
 app.use(express.static(__dirname));
 

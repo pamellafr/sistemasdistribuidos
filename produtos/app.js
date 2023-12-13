@@ -139,9 +139,8 @@ app.post('/login', (req, res) => {
 
 const path = require('path');
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+app.use(express.static(__dirname));
+
 const PORT = 3002;
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);

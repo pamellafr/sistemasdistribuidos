@@ -2,25 +2,31 @@
 <html>
 <head>
     <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="login.css">
 </head>
 <body>
+    <div id="login-container">
     <div class="container">
+        <div id="login-right">
         <form id="loginForm">
-            <h1>Login</h1>
+            <h1>LOGIN</h1>
+            <h4>CONTROLE DE ESTOQUE</h4>
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required>
 
             <label for="senha">Senha:</label>
             <input type="password" id="senha" name="senha" required>
 
-            <input type="submit" value="Login">
+            <input type="submit" value="Login"  class="login-button">
         </form>
+    </div>
         <!-- Botão de cadastrar -->
         <a href="http://localhost:3000/" id="cadastrarButton">Não possui uma conta? Cadastrar</a>
     </div>
-
-    
-
+    <div id="login-right">
+        <img src="img/logo4.png" alt="Imagem da estufa">
+      </div>
+</div>
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();

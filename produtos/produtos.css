@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;400;500;700;800;900&display=swap');
+body, button, form, input{
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #380f54;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  
+  #login-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #631c93;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    max-width: 800px;
+    width: 100%;
+  }
+  
+  #login-container > div {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  #login-container h2 {
+    color: #ffffff;
+  }
+  
+  #cadastroForm input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  #cadastrarButton {
+    background-color: #541e86;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    width: 100%; /* Largura definida para 50% da largura do container pai */
+    margin: 10px auto; /* Centraliza o botão horizontalmente e adiciona margem superior e inferior */
+  }
+    
+  #login-right img {
+    max-width: 70%; /* Ajusta a largura da imagem */
+    height: auto; /* Altura automática para manter a proporção */
+  }
+
+  /* Estilização para link branco centralizado */
+#cadastrarButton {
+  color: white;
+  text-decoration: none; /* Remover sublinhado padrão */
+  display: block; /* Tornar o link um bloco para centralização */
+  text-align: center;
+  margin-top: 20px; /* Ajuste a margem conforme necessário */
+}
+#cadastroForm input[type="submit"] {
+  width: 30%; /* Largura do botão */
+  padding: 10px;
+  margin: 10px auto; /* Centraliza o botão horizontalmente e adiciona margem superior e inferior */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: block; /* Torna o botão um bloco para garantir a aplicação de margin auto */
+}
+#cadastrarButton:hover {
+  text-decoration: underline; /* Adicionar sublinhado ao passar o mouse */
+}

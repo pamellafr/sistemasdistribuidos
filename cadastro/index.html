@@ -2,8 +2,10 @@
 <html>
 <head>
     <title>Cadastro de Usuário</title>
+    <link rel="stylesheet" type="text/css" href="cadastro.css">
 </head>
 <body>
+    <div id="login-container">
     <div class="container">
         <h1>Cadastro de Usuário</h1>
         <form id="cadastroForm">
@@ -21,7 +23,7 @@
 
         <a href="http://localhost:3001/" id="cadastrarButton">Já possui uma conta? Faça login</a>
     </div>
-
+</div>
     <script>
         document.getElementById('cadastroForm').addEventListener('submit', function(event) {
             event.preventDefault();
